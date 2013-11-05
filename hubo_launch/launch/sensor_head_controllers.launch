@@ -12,7 +12,7 @@
 
   <!-- Sensor head -->
   <include file="$(find hubo_launch)/launch/head_controller_manager.launch" >
-    <arg name="hardware_port" value="$(arg head1_port)" />
+    <arg name="hardware_port" value="$(arg head2_port)" />
   </include>
   <include file="$(find hubo_launch)/launch/head_controller_spawner.launch" />
   <!-- LIDAR controller -->
