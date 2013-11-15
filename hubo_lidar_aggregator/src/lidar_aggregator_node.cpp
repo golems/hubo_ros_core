@@ -15,32 +15,80 @@
 #include <pcl/point_types.h>
 #include <pcl/io/io.h>
 
+#include <algorithm>
+#include <vector>
+#include <Eigen/Dense>
+
 std::string g_fixed_frame;
 ros::Publisher g_cloud_publisher;
 laser_geometry::LaserProjection g_laser_projector;
 tf::TransformListener* g_transformer;
 
+bool TimeLess(const sensor_msgs::LaserScan& s1, const sensor_msgs::LaserScan& s2) {
+	return s1.header.stamp.toSec() < s2.header.stamp.toSec();
+}
+
+bool TimeGreater(const sensor_msgs::LaserScan& s1, const sensor_msgs::LaserScan& s2) {
+	return s1.header.stamp.toSec() > s2.header.stamp.toSec();
+}
+
+double ComputeTiltVelocity(const std::vector<dynamixel_msgs::JointState>& tilts) {
+	if(tilts.size() == 0)
+		return 0;
+ 	const double startup_delay = 0.1; // Time for motor to reach steady velocity
+ 	int ss = 0;                       // steady state index
+ 	double min_time = tilts[0].header.stamp.toSec();
+ 	for(int i=0; i < tilts.size(); i++) {
+ 		if(tilts[i].header.stamp.toSec() - min_time > startup_delay) {
+ 			ss = i;
+ 			break;
+ 		}
+ 	}
+ 	Eigen::MatrixXd A(tilts.size() - ss, 2);
+	Eigen::VectorXd b(tilts.size() - ss);
+	for(int i=0; i < tilts.size(); i++) {
+		if(i >= ss) {
+			A(i - ss,0) = tilts[i].header.stamp.toSec() - min_time;
+			A(i - ss,1) = 1;
+			b(i - ss) = tilts[i].current_pos;
+		}
+	}
+	Eigen::VectorXd x = A.colPivHouseholderQr().solve(b);
+	ROS_INFO("Estimated lidar tilt velocity: %f", x(0));
+	return x(0);
+}
+
 bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req, hubo_sensor_msgs::LidarAggregation::Response& res)
 {
     ROS_INFO("Attempting to aggregate %ld laser scans into a pointcloud", req.Scans.size());
     sensor_msgs::PointCloud2 full_cloud;
-    if (req.Scans.size() > 1)
+    if (req.Scans.size() > 0)
     {
-        g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[0], full_cloud, *g_transformer);
-        for (unsigned int index = 1; index < req.Scans.size(); index++)
+	    if(ComputeTiltVelocity(req.Tilts) > 0)
+		    std::sort(req.Scans.begin(), req.Scans.end(), TimeLess);
+	    else
+		    std::sort(req.Scans.begin(), req.Scans.end(), TimeGreater);
+	    int points_per_scan = -1; // It's not ranges.size()! (due to min/max angle truncation in LaserProjector)
+        for (int index = 0; index < req.Scans.size(); index++)
         {
             sensor_msgs::PointCloud2 scan_cloud;
-            g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[index], scan_cloud, *g_transformer);
+            g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[index], scan_cloud, *g_transformer); // Setting the range cutoff doesn't work, I'm not going to bother figuring out why
             bool succeded = pcl::concatenatePointCloud(full_cloud, scan_cloud, full_cloud);
             if (!succeded)
             {
                 ROS_ERROR("PCL could not concatenate pointclouds");
             }
+            // Check if all scanlines generate the same number of points
+            if(points_per_scan == -1)
+	            points_per_scan = scan_cloud.width;
+            else if(points_per_scan != scan_cloud.width)
+	            points_per_scan = -2;
         }
-    }
-    else if (req.Scans.size() == 1)
-    {
-        g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[0], full_cloud, *g_transformer);
+        if(points_per_scan > 0) {
+	        full_cloud.height = req.Scans.size();
+	        full_cloud.width = full_cloud.width/full_cloud.height; // Doing this right prevents malloc segfaults in rviz, otherwise leave it unorganized
+        }
+        ROS_INFO("Created cloud of width: %d, height: %d.", full_cloud.width, full_cloud.height);
     }
     else
     {
@@ -48,8 +96,10 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
     }
     full_cloud.header.frame_id = g_fixed_frame;
     full_cloud.header.stamp = ros::Time::now();
+    res.header.frame_id = g_fixed_frame;
+    res.header.stamp = full_cloud.header.stamp;
     res.Cloud = full_cloud;
-    g_cloud_publisher.publish(full_cloud);
+    // g_cloud_publisher.publish(full_cloud);
     return true;
 }
 

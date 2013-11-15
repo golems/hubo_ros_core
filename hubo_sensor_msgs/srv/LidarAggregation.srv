@@ -1,3 +1,5 @@
 sensor_msgs/LaserScan[] Scans
+dynamixel_msgs/JointState[] Tilts
 ---
+std_msgs/Header header
 sensor_msgs/PointCloud2 Cloud

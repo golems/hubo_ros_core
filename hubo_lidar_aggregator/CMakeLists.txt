@@ -4,13 +4,13 @@ project(hubo_lidar_aggregator)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs laser_geometry pcl pcl_ros message_generation roscpp sensor_msgs std_msgs hubo_sensor_msgs tf)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs laser_geometry pcl pcl_ros message_generation roscpp sensor_msgs std_msgs hubo_sensor_msgs tf dynamixel_msgs)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 
-catkin_package(CATKIN_DEPENDS geometry_msgs laser_geometry pcl pcl_ros message_runtime roscpp sensor_msgs std_msgs hubo_sensor_msgs tf DEPENDS system_lib)
+catkin_package(CATKIN_DEPENDS geometry_msgs laser_geometry pcl pcl_ros message_runtime roscpp sensor_msgs std_msgs hubo_sensor_msgs tf DEPENDS system_lib dynamixel_msgs)
 
 ###########
 ## Build ##
