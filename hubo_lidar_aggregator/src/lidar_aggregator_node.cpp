@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "lidar_aggregator");
     ros::NodeHandle nh;
     ros::NodeHandle nhp("~");
-    tf::TransformListener listener(nh, ros::Duration(20.0));
+    tf::TransformListener listener(nh, ros::Duration(20000.0));
     g_transformer = &listener;
     ROS_INFO("Starting LIDAR aggregator...");
     nhp.param(std::string("fixed_frame"), g_fixed_frame, std::string("/torso_lift_link"));
