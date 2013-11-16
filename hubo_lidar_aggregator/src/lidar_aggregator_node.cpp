@@ -61,6 +61,9 @@ double ComputeTiltVelocity(const std::vector<dynamixel_msgs::JointState>& tilts)
 bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req, hubo_sensor_msgs::LidarAggregation::Response& res)
 {
     ROS_INFO("Attempting to aggregate %ld laser scans into a pointcloud", req.Scans.size());
+	g_transformer->waitForTransform("/head_base_link", ros::Time::now(),
+									"/lidar_optical_frame", ros::Time::now(),
+									"/head_base_link", ros::Duration(5.0));
     sensor_msgs::PointCloud2 full_cloud;
     if (req.Scans.size() > 0)
     {
@@ -69,7 +72,8 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 	    else
 		    std::sort(req.Scans.begin(), req.Scans.end(), TimeGreater);
 	    int points_per_scan = -1; // It's not ranges.size()! (due to min/max angle truncation in LaserProjector)
-        for (int index = 0; index < req.Scans.size(); index++)
+		g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[0], full_cloud, *g_transformer); // Setting the range cutoff doesn't work, I'm not going to bother figuring out why
+		for (int index = 1; index < req.Scans.size(); index++)
         {
             sensor_msgs::PointCloud2 scan_cloud;
             g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[index], scan_cloud, *g_transformer); // Setting the range cutoff doesn't work, I'm not going to bother figuring out why
