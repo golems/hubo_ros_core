@@ -16,6 +16,7 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/features/integral_image_normal.h>
 
 #include <numeric>
 
@@ -98,6 +99,7 @@ IntensityStats::Ptr getStats(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
 {
 	IntensityStats::Ptr stats(new IntensityStats);
 
+	/*
 	for (int i = 0; i < cloud->points.size(); ++i)
 	{
 		//pcl::PointXYZI& p = cloud->points[i];
@@ -121,12 +123,29 @@ IntensityStats::Ptr getStats(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
 
 	stats->stdDev /= cloud->points.size();
 	stats->stdDev = sqrt(stats->stdDev);
+	*/
+
+	for (int i = 0; i < cloud->points.size(); ++i)
+	{
+		float intensity = cloud->points[i].intensity;
+
+		// Update Range Statistics
+		if (intensity > stats->max) { stats->max = intensity; }
+		if (intensity < stats->min) { stats->min = intensity; }
+
+		// Update Distribution statistics
+		float delta = intensity - stats->mean;
+		stats->mean += (1.0/(float)i) * delta;
+		stats->stdDev += delta * (intensity - stats->mean); // Variance
+	}
+	stats->stdDev = sqrt(stats->stdDev); // StdDev
 
 	return stats;
 }
 
 
 FilterSettings g_settings;
+bool doComputeNormals = true;
 
 std::string g_fixed_frame;
 //ros::Publisher g_cloud_publisher;
@@ -158,6 +177,26 @@ void cleanPointCloud(sensor_msgs::PointCloud2& cloudIn)
 	sor.filter (*cloud);
 
 	pcl::toROSMsg(*cloud, cloudIn);
+}
+
+void computeNormals(sensor_msgs::PointCloud2& cloudIn)
+{
+	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+	pcl::fromROSMsg(cloudIn, *cloud);
+
+	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+
+	pcl::IntegralImageNormalEstimation<pcl::PointXYZI, pcl::Normal> ne;
+	ne.setNormalEstimationMethod(ne.AVERAGE_3D_GRADIENT);
+	ne.setMaxDepthChangeFactor(0.02f);
+	ne.setNormalSmoothingSize(10.0f);
+	ne.setInputCloud(cloud);
+	ne.compute(*normals);
+
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr fullCloud(new pcl::PointCloud<pcl::PointXYZINormal>);
+	pcl::concatenateFields(*cloud, *normals, *fullCloud);
+
+	pcl::toROSMsg(*fullCloud, cloudIn);
 }
 
 bool TimeLess(const sensor_msgs::LaserScan& s1, const sensor_msgs::LaserScan& s2) {
@@ -235,6 +274,12 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 		{
 			cleanPointCloud(full_cloud);
 		}
+
+		// Estimate surface normals
+		if (doComputeNormals && full_cloud.height > 1)
+		{
+			computeNormals(full_cloud);
+		}
     }
     else
     {
@@ -266,6 +311,7 @@ int main(int argc, char** argv)
 	nhp.getParam("intensity_stddevs", g_settings.intensityStdDevs);
 	nhp.getParam("distance_stddevs", g_settings.distanceStdDevs);
 	nhp.getParam("num_neighbors", g_settings.numNeighbors);
+	nhp.getParam("compute_normals", doComputeNormals);
 
 	g_filter_enable_sub = nh.subscribe("enable_filter", 1, filterEnableCB);
 
