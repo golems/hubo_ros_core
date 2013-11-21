@@ -16,7 +16,7 @@
   </include>
   <include file="$(find hubo_launch)/launch/head_controller_spawner.launch" />
   <!-- Hokuyo Laser -->
-  <node name="hokuyo_laser" pkg="hubo_vision_common" type="hokuyo_ip_node" output="$(arg output)">
+  <node name="hokuyo_laser" pkg="hubo_vision_common" type="hokuyo_ip_node" output="$(arg output)" respawn="True">
     <remap from="hokuyo_scan" to="hokuyo/scan" />
     <param name="frame_id" type="string" value="lidar_optical_frame" />
   </node>
@@ -28,7 +28,7 @@
   </node>
   <node name="laser_scan_aggregator" pkg="hubo_lidar_aggregator" type="hubo_lidar_aggregator_node" output="$(arg output)">
     <remap from="/tf" to="$(arg remapped_tf)" />
-    <param name="fixed_frame" type="string" value="/turret_tilt_link" />
+    <param name="fixed_frame" type="string" value="/head_base_link" />
     <param name="intensity_floor" type="double" value="300" />
     <param name="intensity_ceiling" type="double" value="6000" />
     <param name="num_neighbors" type="int" value="20" />
