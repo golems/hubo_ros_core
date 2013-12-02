@@ -18,6 +18,8 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/features/integral_image_normal.h>
 
+#include <pcl/io/pcd_io.h>
+
 #include <numeric>
 
 #include <algorithm>
@@ -181,6 +183,8 @@ void cleanPointCloud(sensor_msgs::PointCloud2& cloudIn)
 
 void computeNormals(sensor_msgs::PointCloud2& cloudIn)
 {
+	std::cout << "Computing Normals." << std::endl;
+
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
 	pcl::fromROSMsg(cloudIn, *cloud);
 
@@ -190,11 +194,15 @@ void computeNormals(sensor_msgs::PointCloud2& cloudIn)
 	ne.setNormalEstimationMethod(ne.AVERAGE_3D_GRADIENT);
 	ne.setMaxDepthChangeFactor(0.02f);
 	ne.setNormalSmoothingSize(10.0f);
+	ne.setKSearch(g_settings.numNeighbors/4);
+	ne.setDepthDependentSmoothing(true);
 	ne.setInputCloud(cloud);
 	ne.compute(*normals);
-
+	std::cout << "Computed Normals." << std::endl;
 	pcl::PointCloud<pcl::PointXYZINormal>::Ptr fullCloud(new pcl::PointCloud<pcl::PointXYZINormal>);
 	pcl::concatenateFields(*cloud, *normals, *fullCloud);
+
+	pcl::io::savePCDFileASCII("/home/arprice/normals.pcd", *fullCloud);
 
 	pcl::toROSMsg(*fullCloud, cloudIn);
 }

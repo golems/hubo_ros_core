@@ -8,11 +8,13 @@
   <arg name="head1_port" default="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A8005jD4-if00-port0" />
   <!-- This is the ID of the USB2DYNAMIXEL of the beta head currently used at Georgia Tech -->
   <arg name="head2_port" default="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A4012BEZ-if00-port0" />
+  <!-- This is the ID of the USB2DYNAMIXEL of the beta head currently used at Georgia Tech -->
+  <arg name="head3_port" default="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01FPVL-if00-port0" />
   <!-- Add more head control USB2DYNAMIXEL IDs here -->
 
   <!-- Sensor head -->
   <include file="$(find hubo_launch)/launch/head_controller_manager.launch" >
-    <arg name="hardware_port" value="$(arg head2_port)" />
+    <arg name="hardware_port" value="$(arg head3_port)" />
   </include>
   <include file="$(find hubo_launch)/launch/head_controller_spawner.launch" />
   <!-- Hokuyo Laser -->
