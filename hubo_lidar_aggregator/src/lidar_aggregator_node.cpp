@@ -286,7 +286,7 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 		// Estimate surface normals
 		if (doComputeNormals && full_cloud.height > 1)
 		{
-			computeNormals(full_cloud);
+			//computeNormals(full_cloud);
 		}
     }
     else
