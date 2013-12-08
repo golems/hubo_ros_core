@@ -1,10 +1,11 @@
 <launch>
-
+  <arg name="remapped_tf" default="/tf" />
   <arg name="hardware_port" />
 
   <node name="head_dynamixel_manager" pkg="dynamixel_controllers" type="controller_manager.py" required="true" output="screen">
     <rosparam  file="$(find hubo_launch)/config/drchubo_head.yaml" command="load"/>
     <param name="serial_ports/head_port/port_name" value="$(arg hardware_port)" />
+    <remap from="/tf" to="$(arg remapped_tf)" />
   </node>
 
 </launch>
