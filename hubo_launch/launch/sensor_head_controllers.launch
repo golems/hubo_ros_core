@@ -44,6 +44,13 @@
     <param name="num_neighbors" type="int" value="20" />
   </node>
 
+  <!--<node pkg="opportunistic_link" type="request_pointcloud_link_startpoint" name="lidar_pointcloud_link_startpoint" output="$(arg output)" >
+    <param name="pointcloud_topic" type="string" value="pointcloud" />
+    <param name="compression_type" type="string" value="PC30" />
+    <param name="data_service" type="string" value="/laser/data" />
+    <remap from="/tf" to="$(arg remapped_tf)" />
+  </node>-->
+
   <!-- Head pointing controller -->
   <node name="point_head_controller" pkg="hubo_head_controller" type="point_head_controller.py" output="$(arg output)">
     <remap from="/tf" to="$(arg remapped_tf)" />
