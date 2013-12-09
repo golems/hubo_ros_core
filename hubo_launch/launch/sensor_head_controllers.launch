@@ -29,6 +29,11 @@
     <param name="frame_id" type="string" value="lidar_optical_frame" />
   </node>
 
+  <node name="hokuyo_transport_laser" pkg="topic_tools" type="throttle" output="$(arg output)"
+        args="messages /hokuyo/scan 10 /hokuyo/scan/transport">
+        <remap from="/tf" to="$(arg remapped_tf)" />
+  </node>
+
   <!-- LIDAR controller -->
   <node name="laser_scan_controller" pkg="hubo_head_controller" type="laser_scan_controller.py" output="$(arg output)">
     <remap from="/tf" to="$(arg remapped_tf)" />
