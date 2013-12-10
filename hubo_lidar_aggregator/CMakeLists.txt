@@ -5,13 +5,14 @@ SET(CMAKE_BUILD_TYPE "Release")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs laser_geometry pcl pcl_ros message_generation roscpp sensor_msgs std_msgs hubo_sensor_msgs tf dynamixel_msgs)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs laser_geometry pcl pcl_ros message_generation roscpp sensor_msgs std_msgs hubo_sensor_msgs tf dynamixel_msgs
+                                        opportunistic_link)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 
-catkin_package(CATKIN_DEPENDS geometry_msgs laser_geometry pcl pcl_ros message_runtime roscpp sensor_msgs std_msgs hubo_sensor_msgs tf DEPENDS system_lib dynamixel_msgs)
+catkin_package(CATKIN_DEPENDS geometry_msgs laser_geometry pcl pcl_ros message_runtime roscpp sensor_msgs std_msgs hubo_sensor_msgs tf opportunistic_link DEPENDS system_lib dynamixel_msgs)
 
 ###########
 ## Build ##

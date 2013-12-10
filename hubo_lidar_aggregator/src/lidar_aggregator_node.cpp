@@ -7,6 +7,7 @@
 #include <tf/transform_broadcaster.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <opportunistic_link/pointcloud_compression.h>
 #include <laser_geometry/laser_geometry.h>
 #include <hubo_sensor_msgs/LidarAggregation.h>
 
@@ -154,6 +155,7 @@ std::string g_fixed_frame;
 ros::Subscriber g_filter_enable_sub;
 laser_geometry::LaserProjection g_laser_projector;
 tf::TransformListener* g_transformer;
+pointcloud_compression::PointCloudHandler compressor;
 
 void cleanPointCloud(sensor_msgs::PointCloud2& cloudIn)
 {
@@ -298,7 +300,7 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 
     res.header.frame_id = g_fixed_frame;
     res.header.stamp = full_cloud.header.stamp;
-    res.Cloud = full_cloud;
+    res.Cloud = compressor.compress_pointcloud2(full_cloud,teleop_msgs::CompressedPointCloud2::PC30);
     // g_cloud_publisher.publish(full_cloud);
     return true;
 }
