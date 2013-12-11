@@ -300,7 +300,7 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 
     res.header.frame_id = g_fixed_frame;
     res.header.stamp = full_cloud.header.stamp;
-    res.Cloud = compressor.compress_pointcloud2(full_cloud,teleop_msgs::CompressedPointCloud2::PC30);
+    res.Cloud = compressor.compress_pointcloud2(full_cloud,teleop_msgs::CompressedPointCloud2::ZLIB);
     // g_cloud_publisher.publish(full_cloud);
     return true;
 }
