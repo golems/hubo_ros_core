@@ -2,4 +2,5 @@ sensor_msgs/LaserScan[] Scans
 dynamixel_msgs/JointState[] Tilts
 ---
 std_msgs/Header header
-teleop_msgs/CompressedPointCloud2 Cloud
+# teleop_msgs/CompressedPointCloud2 Cloud # Original message
+int64 Cloud                               # To avoid sending pointcloud in actionlib over network with latency

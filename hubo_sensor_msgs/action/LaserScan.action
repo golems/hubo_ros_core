@@ -4,7 +4,8 @@ float64 max_angle
 float64 tilt_rate
 ---
 # result definition
-teleop_msgs/CompressedPointCloud2 scan
+# teleop_msgs/CompressedPointCloud2 scan # Original definition
+int64 scan                               # To avoid sending pointcloud in actionlib over network with latency
 ---
 # feedback definition
 float64 percent_complete

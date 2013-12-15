@@ -151,7 +151,7 @@ FilterSettings g_settings;
 bool doComputeNormals = true;
 
 std::string g_fixed_frame;
-//ros::Publisher g_cloud_publisher;
+ros::Publisher g_cloud_publisher;
 ros::Subscriber g_filter_enable_sub;
 laser_geometry::LaserProjection g_laser_projector;
 tf::TransformListener* g_transformer;
@@ -300,8 +300,10 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 
     res.header.frame_id = g_fixed_frame;
     res.header.stamp = full_cloud.header.stamp;
-    res.Cloud = compressor.compress_pointcloud2(full_cloud,teleop_msgs::CompressedPointCloud2::ZLIB);
-    // g_cloud_publisher.publish(full_cloud);
+    res.Cloud = 0;
+    teleop_msgs::CompressedPointCloud2 compressed_cloud = 
+        compressor.compress_pointcloud2(full_cloud,teleop_msgs::CompressedPointCloud2::ZLIB);
+    g_cloud_publisher.publish(compressed_cloud);
     return true;
 }
 
@@ -329,12 +331,15 @@ int main(int argc, char** argv)
     g_transformer = &listener;
     ROS_INFO("Starting LIDAR aggregator...");
     nhp.param(std::string("fixed_frame"), g_fixed_frame, std::string("/torso_lift_link"));
-	//g_cloud_publisher = nh.advertise<sensor_msgs::PointCloud2>("pointcloud", 1, true);
+    std::string compress_topic;
+    nhp.param(std::string("compress_topic"), compress_topic, std::string("/hokuyo/cloud/compressed"));
+	g_cloud_publisher = nh.advertise<teleop_msgs::CompressedPointCloud2>(compress_topic, 1, true);
     ros::ServiceServer server = nh.advertiseService("aggregate_lidar", LaserAggregationServiceCB);
+
+    ROS_INFO_STREAM("[LIDAR Aggregator] fixed frame: " << g_fixed_frame);
+    ROS_INFO_STREAM("[LIDAR Aggregator] compress topic: " << compress_topic);
     ROS_INFO("LIDAR aggregator loaded");
-
 	ros::spin();
-
     ROS_INFO("Shutting down LIDAR aggregator");
     return 0;
 }
