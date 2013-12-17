@@ -27,6 +27,7 @@
     <remap from="/tf" to="$(arg remapped_tf)" />
     <remap from="hokuyo_scan" to="hokuyo/scan" />
     <param name="frame_id" type="string" value="lidar_optical_frame" />
+    <param name="hokuyo_ip" type="string" value="192.168.3.47" />
   </node>
 
   <node name="hokuyo_transport_laser" pkg="topic_tools" type="throttle" output="$(arg output)"
