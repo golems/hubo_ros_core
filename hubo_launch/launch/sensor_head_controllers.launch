@@ -31,7 +31,7 @@
   </node>
 
   <node name="hokuyo_transport_laser" pkg="topic_tools" type="throttle" output="$(arg output)"
-        args="bytes /hokuyo/scan 1 /hokuyo/scan/transport">
+        args="messages /hokuyo/scan 0.25 /hokuyo/scan/transport">
         <remap from="/tf" to="$(arg remapped_tf)" />
   </node>
 
