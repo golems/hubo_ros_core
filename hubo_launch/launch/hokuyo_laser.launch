@@ -1,0 +1,20 @@
+<launch>
+
+  <arg name="output" default="screen" />
+  <arg name="remapped_tf" default="/tf" />
+
+  <!-- Hokuyo Laser -->
+  <node name="hokuyo_laser" pkg="hubo_vision_common" type="hokuyo_ip_node" output="$(arg output)" respawn="True">
+    <remap from="/tf" to="$(arg remapped_tf)" />
+    <remap from="hokuyo_scan" to="hokuyo/scan" />
+    <param name="frame_id" type="string" value="lidar_optical_frame" />
+    <param name="hokuyo_ip" type="string" value="192.168.3.47" />
+  </node>
+
+  <!-- Transport.. -->
+  <node name="hokuyo_transport_laser" pkg="topic_tools" type="throttle" output="$(arg output)"
+        args="messages /hokuyo/scan 0.25 /hokuyo/scan/transport">
+        <remap from="/tf" to="$(arg remapped_tf)" />
+  </node>
+
+</launch>

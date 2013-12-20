@@ -1,0 +1,15 @@
+<launch>
+
+  <arg name="output" default="screen" />
+  <arg name="remapped_tf" default="/tf" />
+
+  <node name="laser_scan_aggregator" pkg="hubo_lidar_aggregator" type="hubo_lidar_aggregator_node" output="$(arg output)">
+    <remap from="/tf" to="$(arg remapped_tf)" />
+    <param name="fixed_frame" type="string" value="/turret_tilt_link" />
+    <param name="intensity_floor" type="double" value="300" />
+    <param name="intensity_ceiling" type="double" value="6000" />
+    <param name="num_neighbors" type="int" value="20" />
+    <param name="compress_topic" type="string" value="/hokuyo/cloud/compressed" />
+  </node>
+
+</launch>
