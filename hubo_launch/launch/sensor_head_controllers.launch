@@ -24,7 +24,7 @@
 
   <!-- Hokuyo Laser -->
   <include file="$(find hubo_launch)/launch/hokuyo_laser.launch">
-    <arg name="remapped_tf value="$(arg remapped_tf)" />
+    <arg name="remapped_tf" value="$(arg remapped_tf)" />
   </include>
 
   <!-- LIDAR controller -->
