@@ -156,6 +156,7 @@ ros::Subscriber g_filter_enable_sub;
 laser_geometry::LaserProjection g_laser_projector;
 tf::TransformListener* g_transformer;
 pointcloud_compression::PointCloudHandler compressor;
+double g_range_cutoff;
 
 void cleanPointCloud(sensor_msgs::PointCloud2& cloudIn)
 {
@@ -256,11 +257,21 @@ bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req,
 		    std::sort(req.Scans.begin(), req.Scans.end(), TimeLess);
 	    else
 		    std::sort(req.Scans.begin(), req.Scans.end(), TimeGreater);
+
+        // Set range max to our cutoff value
+        // Note: laser_geometry ignores range_cutoff in transformLaserScanToPointCloud()
+        req.Scans[0].range_max = g_range_cutoff;
+
 	    int points_per_scan = -1; // It's not ranges.size()! (due to min/max angle truncation in LaserProjector)
 		g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[0], full_cloud, *g_transformer); // Setting the range cutoff doesn't work, I'm not going to bother figuring out why
 		for (int index = 1; index < req.Scans.size(); index++)
         {
             sensor_msgs::PointCloud2 scan_cloud;
+
+            // Set range max to our cutoff value
+            // Note: laser_geometry ignores range_cutoff in transformLaserScanToPointCloud()
+            req.Scans[index].range_max = g_range_cutoff;
+
             g_laser_projector.transformLaserScanToPointCloud(g_fixed_frame, req.Scans[index], scan_cloud, *g_transformer); // Setting the range cutoff doesn't work, I'm not going to bother figuring out why
             bool succeded = pcl::concatenatePointCloud(full_cloud, scan_cloud, full_cloud);
             if (!succeded)
@@ -324,6 +335,7 @@ int main(int argc, char** argv)
 	nhp.getParam("distance_stddevs", g_settings.distanceStdDevs);
 	nhp.getParam("num_neighbors", g_settings.numNeighbors);
 	nhp.getParam("compute_normals", doComputeNormals);
+    nhp.param(std::string("range_cutoff"), g_range_cutoff, 10.0);
 
 	g_filter_enable_sub = nh.subscribe("enable_filter", 1, filterEnableCB);
 
