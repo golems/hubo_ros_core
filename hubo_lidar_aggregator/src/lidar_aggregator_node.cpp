@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <math.h>
 #include <string>
 #include <tf/tf.h>
@@ -244,6 +245,13 @@ double ComputeTiltVelocity(const std::vector<dynamixel_msgs::JointState>& tilts)
 	return x(0);
 }
 
+void RangeCutoffCallback(const std_msgs::Float32::ConstPtr& msg)
+{
+    if(msg != 0) {
+        g_range_cutoff = msg->data;
+    }
+}
+
 bool LaserAggregationServiceCB(hubo_sensor_msgs::LidarAggregation::Request& req, hubo_sensor_msgs::LidarAggregation::Response& res)
 {
     ROS_INFO("Attempting to aggregate %ld laser scans into a pointcloud", req.Scans.size());
@@ -338,6 +346,8 @@ int main(int argc, char** argv)
     nhp.param(std::string("range_cutoff"), g_range_cutoff, 10.0);
 
 	g_filter_enable_sub = nh.subscribe("enable_filter", 1, filterEnableCB);
+
+    ros::Subscriber range_sub = nh.subscribe("hokuyo/scan/range_cutoff", 1, RangeCutoffCallback);
 
     tf::TransformListener listener(nh, ros::Duration(20000.0));
     g_transformer = &listener;
