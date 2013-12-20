@@ -41,6 +41,7 @@
     <param name="intensity_ceiling" type="double" value="6000" />
     <param name="num_neighbors" type="int" value="20" />
     <param name="compress_topic" type="string" value="/hokuyo/cloud/compressed" />
+    <param name="range_cutoff" type="double" value="10.0" />
   </node>
 
   <!-- Head pointing controller -->
