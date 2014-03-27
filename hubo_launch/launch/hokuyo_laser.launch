@@ -8,7 +8,7 @@
     <remap from="/tf" to="$(arg remapped_tf)" />
     <remap from="hokuyo_scan" to="hokuyo/scan" />
     <param name="frame_id" type="string" value="lidar_optical_frame" />
-    <param name="hokuyo_ip" type="string" value="192.168.0.10" />
+    <param name="hokuyo_ip" type="string" value="192.168.1.47" />
     <param name="laser_angle_range" type="double" value="100.0" />
   </node>
 
